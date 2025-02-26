@@ -1,25 +1,27 @@
 const scene = document.querySelector('.scene');
 const resetBtn = document.querySelector('.reset-btn');
 const rows = 3;
-const dominoesPerRow = 10;
+const dominoesPerRow = 7; // 3 rows * 7 dominoes = 21 total
 const dominoes = [];
-const baseWidth = 20;
-const baseHeight = 100;
-const rowSpacing = 150; // Vertical spacing between rows
-const dominoSpacing = 40; // Horizontal spacing between dominoes
+const baseWidth = 20; // Starting width for the smallest domino
+const baseHeight = 100; // Starting height for the smallest domino
+const sizeIncrement = 5; // Size increase per domino
+const gap = 40; // Gap between dominoes
+const rowGap = 150; // Gap between rows
 
-// Create dominoes for each row
+// Create dominoes with unique sizes and positions
 for (let row = 0; row < rows; row++) {
     const rowDominoes = [];
     for (let i = 0; i < dominoesPerRow; i++) {
+        const dominoIndex = row * dominoesPerRow + i; // Unique index from 0 to 20
         const domino = document.createElement('div');
         domino.classList.add('domino');
-        const width = baseWidth + (row * 5) + (i * 2);
-        const height = baseHeight + (row * 10) + (i * 5);
+        const width = baseWidth + dominoIndex * sizeIncrement;
+        const height = baseHeight + dominoIndex * sizeIncrement;
         domino.style.width = `${width}px`;
         domino.style.height = `${height}px`;
-        domino.style.left = `${i * dominoSpacing}px`;
-        domino.style.bottom = `${row * rowSpacing}px`;
+        domino.style.left = `${i * (width + gap)}px`; // Horizontal position with gap
+        domino.style.bottom = `${row * (baseHeight + rowGap)}px`; // Vertical position with row gap
         scene.appendChild(domino);
         rowDominoes.push(domino);
     }
@@ -44,19 +46,18 @@ function startChainReaction() {
 // Fall sequence for a row
 function fallRow(row, start, direction) {
     const rowDominoes = dominoes[row];
-    const indices = direction === 1 ? [...Array(rowDominoes.length).keys()] : [...Array(rowDominoes.length).keys()].reverse();
+    const indices = direction === 1 ? 
+        [...Array(rowDominoes.length).keys()] : 
+        [...Array(rowDominoes.length).keys()].reverse();
     indices.forEach((i, index) => {
         setTimeout(() => {
             rowDominoes[i].classList.add('fallen');
-            if (index === indices.length - 1) {
-                if (row < rows - 1) {
-                    const nextRow = row + 1;
-                    const nextStart = direction === 1 ? rowDominoes.length - 1 : 0;
-                    const nextDirection = direction * -1; // Alternate direction
-                    fallRow(nextRow, nextStart, nextDirection);
-                } else {
-                    showResetButton();
-                }
+            if (index === indices.length - 1 && row < rows - 1) {
+                const nextRow = row + 1;
+                const nextDirection = direction * -1; // Alternate direction
+                setTimeout(() => fallRow(nextRow, 0, nextDirection), 200);
+            } else if (row === rows - 1 && index === indices.length - 1) {
+                showResetButton();
             }
         }, index * 200);
     });
