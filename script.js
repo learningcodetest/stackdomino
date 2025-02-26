@@ -1,34 +1,32 @@
 const scene = document.querySelector('.scene');
 const resetBtn = document.querySelector('.reset-btn');
-const rows = 3;
-const dominoesPerRow = 7; // 3 rows * 7 dominoes = 21 total
+const rows = 3; // Three rows of dominoes
+const dominoesPerRow = 7; // Seven dominoes per row
 const dominoes = [];
-const baseWidth = 20; // Starting width for the smallest domino
-const baseHeight = 100; // Starting height for the smallest domino
-const sizeIncrement = 5; // Size increase per domino
-const gap = 40; // Gap between dominoes
-const rowGap = 150; // Gap between rows
+const dominoWidth = 20; // Fixed width for all dominoes
+const baseHeight = 100; // Starting height of the smallest domino
+const heightIncrement = 10; // Height increase per domino
+const gap = 5; // Small gap for realistic spacing
 
-// Create dominoes with unique sizes and positions
+// Create dominoes with fixed width and increasing height
 for (let row = 0; row < rows; row++) {
     const rowDominoes = [];
     for (let i = 0; i < dominoesPerRow; i++) {
-        const dominoIndex = row * dominoesPerRow + i; // Unique index from 0 to 20
+        const dominoIndex = row * dominoesPerRow + i; // Unique index (0 to 20)
         const domino = document.createElement('div');
         domino.classList.add('domino');
-        const width = baseWidth + dominoIndex * sizeIncrement;
-        const height = baseHeight + dominoIndex * sizeIncrement;
-        domino.style.width = `${width}px`;
-        domino.style.height = `${height}px`;
-        domino.style.left = `${i * (width + gap)}px`; // Horizontal position with gap
-        domino.style.bottom = `${row * (baseHeight + rowGap)}px`; // Vertical position with row gap
+        const height = baseHeight + dominoIndex * heightIncrement; // Height increases
+        domino.style.width = `${dominoWidth}px`; // Consistent width
+        domino.style.height = `${height}px`; // Increasing height
+        domino.style.left = `${i * (dominoWidth + gap)}px`; // Position with small gap
+        domino.style.bottom = `${row * (baseHeight + 150)}px`; // Row spacing
         scene.appendChild(domino);
         rowDominoes.push(domino);
     }
     dominoes.push(rowDominoes);
 }
 
-// Add click event to the first domino in the first row
+// Start chain reaction when clicking the first domino
 const firstDomino = dominoes[0][0];
 firstDomino.addEventListener('click', () => {
     firstDomino.classList.add('wobbling');
@@ -38,17 +36,17 @@ firstDomino.addEventListener('click', () => {
     }, 1000); // Wobble for 1 second before falling
 });
 
-// Start the chain reaction
+// Trigger the chain reaction
 function startChainReaction() {
     fallRow(0, 0, 1); // Start with first row, left to right
 }
 
-// Fall sequence for a row
+// Handle falling sequence for each row
 function fallRow(row, start, direction) {
     const rowDominoes = dominoes[row];
     const indices = direction === 1 ? 
-        [...Array(rowDominoes.length).keys()] : 
-        [...Array(rowDominoes.length).keys()].reverse();
+        [...Array(rowDominoes.length).keys()] : // Left to right
+        [...Array(rowDominoes.length).keys()].reverse(); // Right to left
     indices.forEach((i, index) => {
         setTimeout(() => {
             rowDominoes[i].classList.add('fallen');
@@ -59,11 +57,11 @@ function fallRow(row, start, direction) {
             } else if (row === rows - 1 && index === indices.length - 1) {
                 showResetButton();
             }
-        }, index * 200);
+        }, index * 200); // Delay between each fall
     });
 }
 
-// Show the reset button
+// Display reset button after completion
 function showResetButton() {
     resetBtn.style.display = 'block';
 }
