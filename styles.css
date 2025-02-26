@@ -11,22 +11,23 @@ body {
     position: relative;
     width: 1200px;
     height: 600px;
+    perspective: 1000px; /* Adds 3D depth to the falling effect */
 }
 
 .domino {
     position: absolute;
     background-color: #333;
     border-radius: 4px;
-    transform-origin: bottom;
-    transition: transform 0.5s ease;
+    transform-origin: bottom; /* Pivot from the bottom for falling */
+    transition: transform 0.5s ease; /* Smooth falling animation */
 }
 
 .wobbling {
-    animation: wobble 0.5s ease infinite;
+    animation: wobble 0.5s ease infinite; /* Wobble effect before falling */
 }
 
 .fallen {
-    transform: rotateX(90deg);
+    transform: rotateX(90deg) translateY(10px); /* Fall forward with slight overlap */
 }
 
 .reset-btn {
