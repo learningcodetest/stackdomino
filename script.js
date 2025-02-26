@@ -1,61 +1,78 @@
 const scene = document.querySelector('.scene');
 const resetBtn = document.querySelector('.reset-btn');
-const totalDominoes = 25;
+const rows = 3;
+const dominoesPerRow = 10;
 const dominoes = [];
+const baseWidth = 20;
+const baseHeight = 100;
+const rowSpacing = 150; // Vertical spacing between rows
+const dominoSpacing = 40; // Horizontal spacing between dominoes
 
-// Create dominoes
-for (let i = 0; i < totalDominoes; i++) {
-    const domino = document.createElement('div');
-    domino.classList.add('domino');
-    domino.style.left = `${i * 60}px`;
-    scene.appendChild(domino);
-    dominoes.push(domino);
+// Create dominoes for each row
+for (let row = 0; row < rows; row++) {
+    const rowDominoes = [];
+    for (let i = 0; i < dominoesPerRow; i++) {
+        const domino = document.createElement('div');
+        domino.classList.add('domino');
+        const width = baseWidth + (row * 5) + (i * 2);
+        const height = baseHeight + (row * 10) + (i * 5);
+        domino.style.width = `${width}px`;
+        domino.style.height = `${height}px`;
+        domino.style.left = `${i * dominoSpacing}px`;
+        domino.style.bottom = `${row * rowSpacing}px`;
+        scene.appendChild(domino);
+        rowDominoes.push(domino);
+    }
+    dominoes.push(rowDominoes);
 }
 
-// Set initial scene transform for front view
-scene.style.transform = 'rotateY(30deg)';
-
-// Add click event to first domino
-const firstDomino = dominoes[0];
+// Add click event to the first domino in the first row
+const firstDomino = dominoes[0][0];
 firstDomino.addEventListener('click', () => {
     firstDomino.classList.add('wobbling');
     setTimeout(() => {
         firstDomino.classList.remove('wobbling');
         startChainReaction();
-    }, 3500); // Wobble for 3.5 seconds
+    }, 1000); // Wobble for 1 second before falling
 });
 
 // Start the chain reaction
 function startChainReaction() {
-    dominoes.forEach((domino, index) => {
+    fallRow(0, 0, 1); // Start with first row, left to right
+}
+
+// Fall sequence for a row
+function fallRow(row, start, direction) {
+    const rowDominoes = dominoes[row];
+    const indices = direction === 1 ? [...Array(rowDominoes.length).keys()] : [...Array(rowDominoes.length).keys()].reverse();
+    indices.forEach((i, index) => {
         setTimeout(() => {
-            domino.classList.add('fallen');
-            if (index === 2) transitionToSideView();
-            if (index === dominoes.length - 1) showResetButton();
+            rowDominoes[i].classList.add('fallen');
+            if (index === indices.length - 1) {
+                if (row < rows - 1) {
+                    const nextRow = row + 1;
+                    const nextStart = direction === 1 ? rowDominoes.length - 1 : 0;
+                    const nextDirection = direction * -1; // Alternate direction
+                    fallRow(nextRow, nextStart, nextDirection);
+                } else {
+                    showResetButton();
+                }
+            }
         }, index * 200);
     });
 }
 
-// Transition to side view
-function transitionToSideView() {
-    scene.style.transition = 'transform 2s ease';
-    scene.style.transform = 'rotateY(90deg)';
-}
-
-// Show reset button
+// Show the reset button
 function showResetButton() {
     resetBtn.style.display = 'block';
 }
 
-// Reset the game
+// Reset the animation
 resetBtn.addEventListener('click', () => {
     resetBtn.style.display = 'none';
-    scene.style.transition = 'transform 2s ease';
-    scene.style.transform = 'rotateY(30deg)';
-    dominoes.reverse().forEach((domino, index) => {
-        setTimeout(() => {
+    dominoes.forEach(row => {
+        row.forEach(domino => {
             domino.classList.remove('fallen');
-            if (index === dominoes.length - 1) dominoes.reverse(); // Restore order
-        }, index * 200);
+        });
     });
 });
